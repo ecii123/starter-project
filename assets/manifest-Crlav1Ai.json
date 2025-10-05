@@ -2,7 +2,7 @@
   "name": "Story Sharing App",
   "short_name": "Story App",
   "description": "App for sharing stories with locations",
-  "start_url": "/starter-project/",
+  "start_url": "/starter-project/#/add-story",
   "display": "standalone",
   "background_color": "#f8f9fa",
   "theme_color": "#0d6efd",
