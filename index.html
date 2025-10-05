@@ -3,15 +3,14 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html;charset=UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <link rel="shortcut icon" href="/starter-project-with-vite/assets/favicon-BAASetfG.png" />
+    <link rel="shortcut icon" href="/starter-project/assets/favicon-BAASetfG.png" />
     <title>Story Sharing App</title>
-    <link rel="manifest" href="/starter-project-with-vite/assets/manifest-CE69D_8k.json" />
+  <link rel="manifest" href="/starter-project/assets/manifest-CE69D_8k.webmanifest" />
     <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" integrity="sha256-p4NxAoJBhIIN+hmNHrzRCf9tD/miZyoHS5obTRR9BMY=" crossorigin=""/>
-    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
- 
-    <script type="module" crossorigin src="/starter-project-with-vite/assets/index-WGrM_y47.js"></script>
-    <link rel="stylesheet" crossorigin href="/starter-project-with-vite/assets/index-CsSUPEmw.css">
-  <link rel="manifest" href="/starter-project-with-vite/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/starter-project-with-vite/registerSW.js"></script></head>
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js" integrity="sha256-20nQCchB9co0qIjJZRGuk2/Z9VM+kNiyxNV1lvTlZBo=" crossorigin=""></script>
+    <script type="module" crossorigin src="/starter-project/assets/index-WGrM_y47.js"></script>
+    <link rel="stylesheet" crossorigin href="/starter-project/assets/index-CsSUPEmw.css">
+  <link rel="manifest" href="/starter-project/manifest.webmanifest"><script id="vite-plugin-pwa:register-sw" src="/starter-project/registerSW.js"></script></head>
   <body>
     <a href="#main-content" class="skip-link">Skip to content</a>
     <header>
@@ -29,6 +28,18 @@
 
         <button id="drawer-button" class="drawer-button">☰</button>
       </div>
+      
+      <nav id="navigation-drawer" class="navigation-drawer">
+  <ul id="nav-list" class="nav-list">
+    <li id="home-link"><a href="#/">Home</a></li>
+    <li id="add-story-link"><a href="#/add-story">Add Story</a></li>
+    <li id="bookmarks-link"><a href="#/bookmarks">Bookmarks</a></li>
+    <li id="login-link"><a href="#/login">Login</a></li>
+    <li id="register-link"><a href="#/register">Register</a></li>
+    <li id="logout-link"><a href="#" id="logout">Logout</a></li>
+  </ul>
+</nav>
+
     </header>
 
     <main id="main-content" class="main-content"></main>
@@ -40,13 +51,15 @@
     </footer>
 
     <script>
-      if ('serviceWorker' in navigator) {
-        window.addEventListener('load', () => {
-          navigator.serviceWorker.register('./sw.js')
-            .then(reg => console.log('Service Worker registered'))
-            .catch(err => console.log('Service Worker registration failed', err));
-        });
-      }
-    </script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      // register relatif agar GitHub Pages mencari file di repo base
+      navigator.serviceWorker.register('./sw.js')
+        .then(reg => console.log('Service Worker registered', reg))
+        .catch(err => console.log('Service Worker registration failed', err));
+    });
+  }
+</script>
+
   </body>
 </html>
