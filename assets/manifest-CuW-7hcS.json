@@ -9,7 +9,7 @@
   "orientation": "portrait-primary",
   "icons": [
   {
-    "src": "src/public/icon-192.png",
+    "src": "/icon-192.png",
     "sizes": "192x192",
     "type": "image/png"
   }
@@ -17,13 +17,13 @@
 
   "screenshots": [
     {
-      "src": "src/public/Screenshot-wide.jpg",
+      "src": "/Screenshot-wide.jpg",
       "sizes": "1280x800",
       "type": "image/jpg",
       "form_factor": "wide"
     },
     {
-      "src": "src/public/Screenshot-narrow.jpg",
+      "src": "/Screenshot-narrow.jpg",
       "sizes": "640x1136",
       "type": "image/jpg",
       "form_factor": "narrow"
@@ -36,7 +36,7 @@
       "description": "Add a new story",
       "icons": [
         {
-          "src": "src/public/icon-add-96.png",
+          "src": "/icon-add-96.png",
           "sizes": "96x96",
           "type": "image/png"
         }
