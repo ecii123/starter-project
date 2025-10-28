@@ -1,2 +1,4 @@
-APP_URL=<url_aplikasi>
-MAP_SERVICE_API_KEY=<api_key>
+Nama: Yessi Sitanggang
+NIM: 11S22023
+Platform Deployment: GitHub Pages
+URL: https://ecii123.github.io/starter-project/

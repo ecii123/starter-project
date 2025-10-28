@@ -2,6 +2,7 @@
 import '../styles/styles.css';
 import 'tiny-slider/dist/tiny-slider.css';
 import 'leaflet/dist/leaflet.css';
+import { dicoding, landmark, streets, trainStops, zoo } from './geojson.js';
 
 // Components
 import App from './pages/app';
@@ -29,3 +30,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     await app.renderPage();
   });
 });
+
+const dicodingLayer = L.geoJSON(dicoding);
+dicodingLayer.addTo(myMap);
+const landmarkLayer = L.geoJSON(landmark);
+landmarkLayer.addTo(myMap);
+const trainStopsLayer = L.geoJSON(trainStops);
+trainStopsLayer.addTo(myMap);
+const streetsLayer = L.geoJSON(streets);
+streetsLayer.addTo(myMap);
+const zooLayer = L.geoJSON([zoo]);
+zooLayer.addTo(myMap);
+
+const featuresGroup = L.featureGroup([
+  dicodingLayer,
+  landmarkLayer,
+  trainStopsLayer,
+  streetsLayer,
+  zooLayer,
+]);
+myMap.fitBounds(featuresGroup.getBounds());
+

@@ -47,6 +47,7 @@ export function generateAuthenticatedNavigationListTemplate() {
     <li id="push-notification-tools" class="push-notification-tools"></li>
     <li id="home-link"><a href="#/">Home</a></li>
     <li id="add-story-link"><a href="#/add-story">Add Story</a></li>
+    <li id="liked-link"><a href="#/liked">Liked Stories</a></li>
     <li id="logout-link"><a href="#">Logout</a></li>
   `;
 }
