@@ -1,5 +1,13 @@
 import { addStory } from '../../data/api';
 import L from 'leaflet';
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
 
 // function updateNavigation() {
 //   const isLoggedIn = !!localStorage.getItem('token');
@@ -133,5 +141,16 @@ export default class AddStoryPage {
       }
       videoContainer.style.display = 'none';
     });
+
+    if (story.lat && story.lon) {
+            const marker = L.marker([story.lat, story.lon]).addTo(map)
+              .bindPopup(`
+                <b>${story.name}</b><br>
+                ${story.description}<br>
+                <img src="${story.photoUrl}" alt="${story.description}" width="100">
+              `);
+            marker.storyId = story.id;
+            markers.push(marker);
+          }
   }
 }

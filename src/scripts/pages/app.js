@@ -62,14 +62,17 @@ class App {
       }
 
       const logoutBtn = document.getElementById('logout-link');
-      if (logoutBtn) {
-        logoutBtn.addEventListener('click', (e) => {
-          e.preventDefault();
-          localStorage.removeItem('token');
-          this.#setupNavigation();
-          window.location.hash = '/login';
-        });
-      }
+    if (logoutBtn) {
+  logoutBtn.addEventListener('click', (e) => {
+    e.preventDefault();
+    localStorage.removeItem('token');
+    this.#setupNavigation();
+    if (window.location.hash !== '/login') {
+      window.location.hash = '/login';
+    }
+  });
+}
+
     }
   }
 

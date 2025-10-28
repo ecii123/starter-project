@@ -1,5 +1,13 @@
 import L from 'leaflet';
 import LikeDB from '../../data/database.js'; // database IndexedDB
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+L.Icon.Default.mergeOptions({
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+});
+
 
 export default class HomePage {
   async render() {

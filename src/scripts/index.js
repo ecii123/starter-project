@@ -8,6 +8,11 @@ import { dicoding, landmark, streets, trainStops, zoo } from './geojson.js';
 import App from './pages/app';
 import { registerServiceWorker } from './utils';
 
+import L from 'leaflet'; // tambahkan kalau belum ada import ini
+
+// Inisialisasi peta
+
+
 // src/scripts/index.js
 document.addEventListener('DOMContentLoaded', async () => {
   const app = new App({
@@ -26,10 +31,24 @@ document.addEventListener('DOMContentLoaded', async () => {
   
   await app.renderPage();
 
-  window.addEventListener('hashchange', async () => {
+ let currentHash = window.location.hash;
+
+window.addEventListener('hashchange', async () => {
+  if (window.location.hash !== currentHash) {
+    currentHash = window.location.hash;
     await app.renderPage();
-  });
+  }
 });
+});
+
+const myMap = L.map('map', {
+  center: [-6.200000, 106.816666], // contoh koordinat Jakarta
+  zoom: 13,
+});
+
+L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+  attribution: '© OpenStreetMap contributors'
+}).addTo(myMap);
 
 const dicodingLayer = L.geoJSON(dicoding);
 dicodingLayer.addTo(myMap);
@@ -51,3 +70,16 @@ const featuresGroup = L.featureGroup([
 ]);
 myMap.fitBounds(featuresGroup.getBounds());
 
+// Pendaftaran Service Worker
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker
+      .register('./service-worker.js')
+      .then(reg => {
+        console.log('Service Worker terdaftar:', reg.scope);
+      })
+      .catch(err => {
+        console.error('Gagal mendaftar Service Worker:', err);
+      });
+  });
+}
