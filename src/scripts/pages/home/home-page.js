@@ -2,12 +2,17 @@ import L from 'leaflet';
 import LikeDB from '../../data/database.js'; // database IndexedDB
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+import { dicoding, landmark, streets, trainStops, zoo } from '../../geojson.js';
+
+let map;
+
+delete L.Icon.Default.prototype._getIconUrl;
 
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
 });
-
 
 export default class HomePage {
   async render() {
@@ -15,22 +20,21 @@ export default class HomePage {
       <section class="container">
         <h1>Stories</h1>
         <div id="map" style="height: 400px; margin-bottom: 20px;"></div>
-        <ul id="storyList"></ul> <!-- Elemen ini ditambahkan agar story dapat dirender -->
+        <ul id="storyList"></ul>
       </section>
     `;
   }
 
   async afterRender() {
-    // Jika belum login, arahkan ke halaman login
+    // Cek login
     if (!localStorage.getItem('token')) {
       window.location.hash = '/login';
       return;
     }
 
-    // Ambil dan tampilkan story
     await this.fetchAndRenderStories();
 
-    // Jika ada flag untuk refresh halaman home
+    // Jika ada flag refresh
     if (localStorage.getItem('refreshHome') === 'true') {
       localStorage.removeItem('refreshHome');
       await this.fetchAndRenderStories();
@@ -47,8 +51,13 @@ export default class HomePage {
     const list = document.getElementById('storyList');
     list.innerHTML = '';
 
-    // Inisialisasi peta
-    const map = L.map('map').setView([0, 0], 2);
+    // Jika map sudah ada, hapus dulu instance lama
+    if (map) {
+      map.remove();
+    }
+
+    // Inisialisasi peta baru
+    map = L.map('map').setView([0, 0], 2);
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     });
@@ -57,7 +66,6 @@ export default class HomePage {
     });
     osm.addTo(map);
 
-    // Tambahkan kontrol layer
     L.control.layers({
       "OpenStreetMap": osm,
       "Satellite": satellite
@@ -65,11 +73,9 @@ export default class HomePage {
 
     const markers = [];
 
-    // Render setiap story ke dalam list dan peta
+    // Tambahkan semua story
     for (const story of stories) {
       const item = document.createElement('li');
-
-      // Cek apakah story sudah disukai di IndexedDB
       const liked = await LikeDB.get(story.id);
 
       item.innerHTML = `
@@ -83,7 +89,7 @@ export default class HomePage {
       `;
       item.tabIndex = 0;
 
-      // Event klik tombol Like
+      // Event like/unlike
       item.querySelector('.like-btn').addEventListener('click', async (e) => {
         const button = e.target;
         const storyId = button.getAttribute('data-id');
@@ -98,7 +104,7 @@ export default class HomePage {
         }
       });
 
-      // Event: klik story -> fokus ke marker
+      // Klik story -> fokus ke marker
       item.addEventListener('click', () => {
         markers.forEach(m => m.setOpacity(0.5));
         const marker = markers.find(m => m.storyId === story.id);
@@ -108,7 +114,6 @@ export default class HomePage {
         }
       });
 
-      // Event: tekan Enter -> klik story
       item.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') item.click();
       });
@@ -126,6 +131,30 @@ export default class HomePage {
         marker.storyId = story.id;
         markers.push(marker);
       }
+    }
+
+    // Tambahkan GeoJSON setelah map dan layer dasar sudah siap
+    try {
+      const dicodingLayer = L.geoJSON(dicoding);
+      const landmarkLayer = L.geoJSON(landmark);
+      const trainStopsLayer = L.geoJSON(trainStops);
+      const streetsLayer = L.geoJSON(streets);
+      const zooLayer = L.geoJSON([zoo]);
+
+      const featuresGroup = L.featureGroup([
+        dicodingLayer,
+        landmarkLayer,
+        trainStopsLayer,
+        streetsLayer,
+        zooLayer,
+      ]);
+
+      if (featuresGroup.getLayers().length > 0) {
+        featuresGroup.addTo(map);
+        map.fitBounds(featuresGroup.getBounds(), { maxZoom: 15 });
+      }
+    } catch (err) {
+      console.warn('Gagal menambahkan geojson ke map:', err);
     }
   }
 }

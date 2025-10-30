@@ -1,5 +1,17 @@
 import L from 'leaflet';
 import LikeDB from '../../data/database.js'; // Impor IndexedDB
+import markerIcon from 'leaflet/dist/images/marker-icon.png';
+import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
+let map; // variabel global map
+
+// konfigurasi ikon marker agar tidak error 404
+delete L.Icon.Default.prototype._getIconUrl;
+L.Icon.Default.mergeOptions({
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
+});
 
 export default class LikedPage {
   async render() {
@@ -13,28 +25,36 @@ export default class LikedPage {
   }
 
   async afterRender() {
-    // Jika belum login, arahkan ke login
     if (!localStorage.getItem('token')) {
       window.location.hash = '/login';
       return;
     }
 
-    // Ambil dan render liked stories dari IndexedDB
     await this.fetchAndRenderLikedStories();
   }
 
   async fetchAndRenderLikedStories() {
-    const likedStories = await LikeDB.getAll(); // Ambil semua story yang disukai dari IndexedDB
+    const likedStories = await LikeDB.getAll();
     const list = document.getElementById('storyList');
     list.innerHTML = '';
 
     if (likedStories.length === 0) {
-      list.innerHTML = '<p>No liked stories yet.</p>'; // Pesan jika kosong
+      list.innerHTML = '<p>No liked stories yet.</p>';
+      if (map) {
+        map.remove(); // hapus peta jika ada
+        map = null;
+      }
       return;
     }
 
-    // Inisialisasi peta
-    const map = L.map('map').setView([0, 0], 2);
+    // jika map sudah pernah diinisialisasi, hapus dulu
+    if (map) {
+      map.remove();
+      map = null;
+    }
+
+    // inisialisasi ulang peta
+    map = L.map('map').setView([0, 0], 2);
     const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     });
@@ -49,6 +69,7 @@ export default class LikedPage {
     }).addTo(map);
 
     const markers = [];
+
     likedStories.forEach(story => {
       const item = document.createElement('li');
       item.innerHTML = `
@@ -56,19 +77,19 @@ export default class LikedPage {
         <p>${story.description}</p>
         <img src="${story.photoUrl}" alt="${story.description}">
         <p>Created: ${new Date(story.createdAt).toLocaleString()}</p>
-        <button class="unlike-btn" data-id="${story.id}">Unlike</button> <!-- Tombol untuk unlike -->
+        <button class="unlike-btn" data-id="${story.id}">Unlike</button>
       `;
       item.tabIndex = 0;
 
-      // Event klik unlike
+      // event: unlike
       item.querySelector('.unlike-btn').addEventListener('click', async (e) => {
         const storyId = e.target.dataset.id;
         await LikeDB.delete(storyId);
         alert('Story unliked');
-        await this.fetchAndRenderLikedStories(); // Refresh list setelah unlike
+        await this.fetchAndRenderLikedStories(); // refresh ulang daftar
       });
 
-      // Event klik story -> fokus ke marker
+      // event: klik item -> fokus ke marker
       item.addEventListener('click', () => {
         markers.forEach(m => m.setOpacity(0.5));
         const marker = markers.find(m => m.storyId === story.id);
@@ -78,13 +99,14 @@ export default class LikedPage {
         }
       });
 
+      // event: tekan enter -> klik
       item.addEventListener('keydown', (e) => {
         if (e.key === 'Enter') item.click();
       });
 
       list.appendChild(item);
 
-      // Tambahkan marker ke peta jika ada lokasi
+      // tambah marker ke peta
       if (story.lat && story.lon) {
         const marker = L.marker([story.lat, story.lon]).addTo(map)
           .bindPopup(`
@@ -96,5 +118,11 @@ export default class LikedPage {
         markers.push(marker);
       }
     });
+
+    // sesuaikan tampilan map agar semua marker terlihat
+    if (markers.length > 0) {
+      const group = L.featureGroup(markers);
+      map.fitBounds(group.getBounds(), { maxZoom: 10 });
+    }
   }
 }

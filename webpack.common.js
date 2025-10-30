@@ -1,6 +1,7 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
+const { GenerateSW } = require('workbox-webpack-plugin');
 
 module.exports = {
   entry: {
@@ -8,9 +9,11 @@ module.exports = {
      //sw: path.resolve(__dirname, 'src/scripts/sw.js'),
   },
   output: {
-    filename: '[name].bundle.js',
-    path: path.resolve(__dirname, 'dist'),
-  },
+  filename: 'scripts/[name].js',
+  path: path.resolve(__dirname, 'dist'),
+  publicPath: './',
+},
+
   module: {
     rules: [
       {
@@ -29,8 +32,10 @@ module.exports = {
         {
           from: path.resolve(__dirname, 'src/public/'),
           to: path.resolve(__dirname, 'dist/'),
+          
         },
       ],
     }),
+
   ],
 };

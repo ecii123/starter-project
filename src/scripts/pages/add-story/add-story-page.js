@@ -3,29 +3,15 @@ import L from 'leaflet';
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
+let map; // variabel global untuk menyimpan peta
+
+delete L.Icon.Default.prototype._getIconUrl;
+
 L.Icon.Default.mergeOptions({
-  iconUrl: markerIcon,
-  shadowUrl: markerShadow,
+  iconRetinaUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png',
+  iconUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png',
+  shadowUrl: 'https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png'
 });
-
-
-// function updateNavigation() {
-//   const isLoggedIn = !!localStorage.getItem('token');
-//   document.getElementById('home-link').classList.toggle('hidden', !isLoggedIn);
-//   document.getElementById('add-story-link').classList.toggle('hidden', !isLoggedIn);
-//   document.getElementById('login-link').classList.toggle('hidden', isLoggedIn);
-//   document.getElementById('register-link').classList.toggle('hidden', isLoggedIn);
-//   document.getElementById('logout-link').classList.toggle('hidden', !isLoggedIn);
-
-//   const logoutBtn = document.getElementById('logout');
-//   if (logoutBtn) {
-//     logoutBtn.addEventListener('click', (e) => {
-//       e.preventDefault();
-//       localStorage.removeItem('token');
-//       window.location.hash = '/login';
-//     });
-//   }
-// }
 
 export default class AddStoryPage {
   async render() {
@@ -58,17 +44,33 @@ export default class AddStoryPage {
   }
 
   async afterRender() {
-  
     if (!localStorage.getItem('token')) {
       window.location.hash = '/login';
       return;
     }
 
-    const map = L.map('map').setView([0, 0], 2);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    // jika map sudah pernah dibuat, hapus dulu sebelum membuat yang baru
+    if (map) {
+      map.remove();
+      map = null;
+    }
+
+    // inisialisasi ulang map
+    map = L.map('map').setView([0, 0], 2);
+    const osm = L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
 
+    const satellite = L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      attribution: 'Tiles &copy; Esri'
+    });
+
+    L.control.layers({
+      "OpenStreetMap": osm,
+      "Satellite": satellite
+    }).addTo(map);
+
+    // marker klik lokasi
     let marker;
     map.on('click', (e) => {
       if (marker) map.removeLayer(marker);
@@ -77,30 +79,31 @@ export default class AddStoryPage {
       document.getElementById('lon').value = e.latlng.lng;
     });
 
+    // form submit
     const form = document.getElementById('addForm');
     form.addEventListener('submit', async (e) => {
-  e.preventDefault();
-  const description = document.getElementById('description').value;
-  let photo = document.getElementById('photo').files[0];
-  const lat = document.getElementById('lat').value;
-  const lon = document.getElementById('lon').value;
+      e.preventDefault();
+      const description = document.getElementById('description').value;
+      let photo = document.getElementById('photo').files[0];
+      const lat = document.getElementById('lat').value;
+      const lon = document.getElementById('lon').value;
 
-  if (!description || !photo) {
-    alert('Description and photo are required');
-    return;
-  }
+      if (!description || !photo) {
+        alert('Description and photo are required');
+        return;
+      }
 
-  const response = await addStory({ description, photo, lat, lon });
-  if (response.message === 'Story created successfully') {
-    alert('Story added!');
-    localStorage.setItem('refreshHome', 'true'); // Flag untuk refresh home
-    window.location.hash = '/'; // Redirect ke home
-  } else {
-    alert(response.error || 'Add failed');
-  }
-});
+      const response = await addStory({ description, photo, lat, lon });
+      if (response.message === 'Story created successfully') {
+        alert('Story added!');
+        localStorage.setItem('refreshHome', 'true'); // flag untuk refresh home
+        window.location.hash = '/'; // redirect ke home
+      } else {
+        alert(response.error || 'Add failed');
+      }
+    });
 
-    // Camera functionality
+    // camera feature
     const cameraBtn = document.getElementById('cameraBtn');
     const video = document.getElementById('video');
     const captureBtn = document.getElementById('captureBtn');
@@ -141,16 +144,5 @@ export default class AddStoryPage {
       }
       videoContainer.style.display = 'none';
     });
-
-    if (story.lat && story.lon) {
-            const marker = L.marker([story.lat, story.lon]).addTo(map)
-              .bindPopup(`
-                <b>${story.name}</b><br>
-                ${story.description}<br>
-                <img src="${story.photoUrl}" alt="${story.description}" width="100">
-              `);
-            marker.storyId = story.id;
-            markers.push(marker);
-          }
   }
 }

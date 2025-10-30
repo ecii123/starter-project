@@ -1,78 +1,45 @@
-import { precacheAndRoute } from 'workbox-precaching';
-import { registerRoute } from 'workbox-routing';
-import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { precacheAndRoute, matchPrecache } from 'workbox-precaching';
+import { registerRoute, setCatchHandler } from 'workbox-routing';
 import { NetworkFirst, CacheFirst, StaleWhileRevalidate } from 'workbox-strategies';
-import { BASE_URL } from './config';
+import { CacheableResponsePlugin } from 'workbox-cacheable-response';
+import { ExpirationPlugin } from 'workbox-expiration';
 
-// Do precaching
-const manifest = self.__WB_MANIFEST;
-precacheAndRoute(manifest);
- 
-// Runtime caching
+// Cache semua file hasil build (HTML, JS, CSS)
+precacheAndRoute(self.__WB_MANIFEST);
+
+// Cache halaman utama agar bisa offline
 registerRoute(
-  ({ url }) => {
-    return url.origin === 'https://fonts.googleapis.com' || url.origin === 'https://fonts.gstatic.com';
-  },
-  new CacheFirst({
-    cacheName: 'google-fonts',
-  }),
-);
-registerRoute(
-  ({ url }) => {
-    return url.origin === 'https://cdnjs.cloudflare.com' || url.origin.includes('fontawesome');
-  },
-  new CacheFirst({
-    cacheName: 'fontawesome',
-  }),
-);
-registerRoute(
-  ({ url }) => {
-    return url.origin === 'https://ui-avatars.com';
-  },
-  new CacheFirst({
-    cacheName: 'avatars-api',
+  ({ request }) => request.mode === 'navigate',
+  new NetworkFirst({
+    cacheName: 'pages-cache',
     plugins: [
-      new CacheableResponsePlugin({
-        statuses: [0, 200],
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+    ],
+  })
+);
+
+// Cache gambar tile dari OpenStreetMap
+registerRoute(
+  ({ url }) =>
+    url.origin.startsWith('https://a.tile.openstreetmap.org') ||
+    url.origin.startsWith('https://b.tile.openstreetmap.org') ||
+    url.origin.startsWith('https://c.tile.openstreetmap.org'),
+  new StaleWhileRevalidate({
+    cacheName: 'osm-tiles',
+    plugins: [
+      new CacheableResponsePlugin({ statuses: [0, 200] }),
+      new ExpirationPlugin({
+        maxEntries: 100, // simpan maksimal 100 tile
+        maxAgeSeconds: 7 * 24 * 60 * 60, // seminggu
       }),
     ],
-  }),
-);
-registerRoute(
-  ({ request, url }) => {
-    const baseUrl = new URL(BASE_URL);
-    return baseUrl.origin === url.origin && request.destination !== 'image';
-  },
-  new NetworkFirst({
-    cacheName: 'citycare-api',
-  }),
-);
-registerRoute(
-  ({ request, url }) => {
-    const baseUrl = new URL(BASE_URL);
-    return baseUrl.origin === url.origin && request.destination === 'image';
-  },
-  new StaleWhileRevalidate({
-    cacheName: 'citycare-api-images',
-  }),
-);
-registerRoute(
-  ({ url }) => {
-    return url.origin.includes('maptiler');
-  },
-  new CacheFirst({
-    cacheName: 'maptiler-api',
-  }),
+  })
 );
 
-self.addEventListener('push', (event) => {
-  console.log('Service worker pushing...');
- 
-  async function chainPromise() {
-    await self.registration.showNotification('Story Baru', {
-      body: 'Ada story baru!',
-    });
+// Offline fallback page
+setCatchHandler(async ({ event }) => {
+  if (event.request.destination === 'document') {
+    return matchPrecache('/offline.html');
   }
- 
-  event.waitUntil(chainPromise());
-})
+  return Response.error();
+});

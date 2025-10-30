@@ -62,7 +62,7 @@ class App {
       }
 
       const logoutBtn = document.getElementById('logout-link');
-    if (logoutBtn) {
+     if (logoutBtn) {
   logoutBtn.addEventListener('click', (e) => {
     e.preventDefault();
     localStorage.removeItem('token');
