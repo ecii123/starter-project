@@ -1,6 +1,7 @@
 <!doctype html>
 <title>Redirecting...</title>
 <script>
-  sessionStorage.redirect = location.href;
+  const hash = location.hash;
+  location.href = '/starter-project/index.html' + hash;
 </script>
 <meta http-equiv="refresh" content="0;URL='/starter-project/index.html'">
