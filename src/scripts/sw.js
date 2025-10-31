@@ -43,3 +43,25 @@ setCatchHandler(async ({ event }) => {
   }
   return Response.error();
 });
+
+// Handle push notifications
+self.addEventListener('push', (event) => {
+  console.log('Service worker pushing...');
+ 
+  async function chainPromise() {
+    await self.registration.showNotification('Story Baru', {
+      body: 'Ada story baru!',
+    });
+  }
+ 
+  event.waitUntil(chainPromise());
+});
+
+// Fix auto-reload: Skip waiting on install to avoid forced reloads
+self.addEventListener('install', (event) => {
+  event.waitUntil(self.skipWaiting());
+});
+
+self.addEventListener('activate', (event) => {
+  event.waitUntil(self.clients.claim());
+});

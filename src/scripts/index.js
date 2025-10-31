@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   );
 
-  // Tambahkan kontrol untuk ganti layer
+  // Tambahkan kontrol layer
   L.control.layers({
     OpenStreetMap: osm,
     Satellite: satellite,

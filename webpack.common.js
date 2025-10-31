@@ -1,19 +1,15 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const { GenerateSW } = require('workbox-webpack-plugin');
 
 module.exports = {
   entry: {
     app: path.resolve(__dirname, 'src/scripts/index.js'),
-     //sw: path.resolve(__dirname, 'src/scripts/sw.js'),
   },
   output: {
-  filename: 'scripts/[name].js',
-  path: path.resolve(__dirname, 'dist'),
-  publicPath: './',
-},
-
+    filename: 'scripts/[name].js',
+    path: path.resolve(__dirname, 'dist'),
+  },
   module: {
     rules: [
       {
@@ -25,17 +21,22 @@ module.exports = {
   plugins: [
     new HtmlWebpackPlugin({
       template: path.resolve(__dirname, 'src/index.html'),
-       excludeChunks: ['sw'],
     }),
     new CopyWebpackPlugin({
       patterns: [
         {
           from: path.resolve(__dirname, 'src/public/'),
           to: path.resolve(__dirname, 'dist/'),
-          
+        },
+        {
+          from: path.resolve(__dirname, 'src/404.html'),
+          to: path.resolve(__dirname, 'dist/404.html'),
+        },
+        {
+          from: path.resolve(__dirname, 'src/offline.html'),
+          to: path.resolve(__dirname, 'dist/offline.html'),
         },
       ],
     }),
-
   ],
 };

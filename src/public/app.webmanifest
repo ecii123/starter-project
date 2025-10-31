@@ -1,9 +1,9 @@
 {
   "id": "/#/",
-  "start_url": "/#/",
-  "scope": "/",
-  "name": "CityCare App",
-  "short_name": "CityCare",
+  "start_url": "/starter-project/#/",
+"scope": "/starter-project/",
+  "name": "Story App",
+  "short_name": "Story",
   "description": "Aplikasi pelaporan kerusakan fasilitas umum yang memungkinkan warga Indonesia melaporkan masalah secara langsung kepada pemerintah kota. Dengan aplikasi ini, komunikasi antara warga dan pemerintah menjadi lebih efisien dalam menangani dan menindaklanjuti laporan kerusakan fasilitas umum.",
   "display": "standalone",
   "background_color": "#FFFFFF",

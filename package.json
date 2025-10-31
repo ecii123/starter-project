@@ -9,7 +9,7 @@
     "prettier": "prettier . --check",
     "prettier:write": "prettier . --write",
     "clean": "rimraf dist node_modules/.vite",
-    "deploy": "gh-pages -d dist"
+    "deploy": "npm run build && gh-pages -d dist"
   },
   "keywords": [],
   "author": "Your Name <your_email>",
